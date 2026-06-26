@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    container_name: isip-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - FASTAPI_HOST=0.0.0.0
+      - FASTAPI_PORT=8000
+      - DATABASE_URL=sqlite:///./data/industrial_safety.db
+      - SECRET_KEY=production-secret-key-change-this
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,http://frontend:3000
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./models:/app/models
+    networks:
+      - isip-network
+    depends_on:
+      - frontend
+    command: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    container_name: isip-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://backend:8000
+      - VITE_WS_URL=ws://backend:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - isip-network
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+
+networks:
+  isip-network:
+    driver: bridge
+
+volumes:
+  data:
+  logs:
+  models:
