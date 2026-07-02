@@ -36,12 +36,12 @@ const Layout = ({ children, user, onLogout }: any) => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-4">
           {menuItems.map((item) => (
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
-              className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-dark-border transition-colors"
+              className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-dark-border transition-colors whitespace-nowrap"
             >
               <item.icon size={20} />
               {sidebarOpen && <span>{item.name}</span>}
@@ -78,8 +78,28 @@ const Layout = ({ children, user, onLogout }: any) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <div className="h-16 bg-dark-card border-b border-dark-border flex items-center px-6">
-          <h2 className="text-xl font-semibold">Industrial Safety Intelligence Platform</h2>
+        <div className="h-16 bg-dark-card border-b border-dark-border flex items-center px-6 overflow-x-auto">
+          <div className="flex items-center gap-6 whitespace-nowrap">
+            {[
+              { name: 'Dashboard', icon: '🏠', path: '/' },
+              { name: 'Sensors', icon: '📊', path: '/sensors' },
+              { name: 'Alerts', icon: '⚠️', path: '/alerts' },
+              { name: 'Incidents', icon: '📋', path: '/incidents' },
+              { name: 'Permits', icon: '✅', path: '/permits' },
+              { name: 'Analytics', icon: '📈', path: '/analytics' },
+              { name: 'Compliance', icon: '📖', path: '/compliance' },
+            ].map((item) => (
+              <button
+                key={item.path}
+                onClick={() => navigate(item.path)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-dark-border transition-colors text-sm font-medium"
+                title={item.name}
+              >
+                <span>{item.icon}</span>
+                <span className="hidden sm:inline">{item.name}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Content */}
