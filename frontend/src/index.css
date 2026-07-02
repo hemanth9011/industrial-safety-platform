@@ -7,7 +7,7 @@
 }
 
 body {
-  @apply bg-dark-bg text-black font-sans;
+  @apply bg-dark-bg text-white font-sans;
 }
 
 .industrial-dashboard {
@@ -33,22 +33,6 @@ body {
 
 .glow-effect {
   @apply shadow-lg shadow-industrial-blue/50;
-}
-
-/* Text Color Override */
-h1, h2, h3, h4, h5, h6, p, span, button, a, label, div {
-  @apply text-black;
-}
-
-/* Keep specific colors for status/alerts */
-.text-industrial-green,
-.text-industrial-yellow,
-.text-industrial-orange,
-.text-industrial-red,
-.text-industrial-blue,
-.text-gray-400,
-.text-gray-500 {
-  @apply text-black;
 }
 
 /* Animations */
