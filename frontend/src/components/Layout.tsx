@@ -26,48 +26,50 @@ const Layout = ({ children, user, onLogout }: any) => {
       {/* Sidebar */}
       <div className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-dark-card border-r border-dark-border transition-all duration-300 flex flex-col`}>
         <div className="p-4 border-b border-dark-border flex items-center justify-between">
-          {sidebarOpen && <h1 className="font-bold text-lg">ISIP</h1>}
+          {sidebarOpen && <h1 className="font-bold text-lg text-black">ISIP</h1>}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 hover:bg-dark-border rounded-lg"
+            className="p-2 hover:bg-dark-border rounded-lg text-black"
           >
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-6 space-y-4">
           {menuItems.map((item) => (
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
-              className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-dark-border transition-colors"
+              className="w-full flex items-center space-x-3 p-4 rounded-lg hover:bg-dark-border transition-colors text-black hover:text-black font-medium"
             >
-              <item.icon size={20} />
-              {sidebarOpen && <span>{item.name}</span>}
+              <item.icon size={20} className="text-black" />
+              {sidebarOpen && <span className="text-black">{item.name}</span>}
             </button>
           ))}
         </nav>
 
         {/* User Section */}
-        <div className="p-4 border-t border-dark-border space-y-2">
+        <div className="p-4 border-t border-dark-border space-y-3 mt-auto">
           {sidebarOpen && (
             <div className="text-sm">
-              <p className="text-gray-400">User</p>
-              <p className="font-semibold capitalize">{user?.username || 'Guest'}</p>
-              <p className="text-xs text-gray-500 capitalize">{user?.role || 'User'}</p>
+              <p className="text-black font-semibold">User</p>
+              <p className="text-black font-semibold capitalize">{user?.username || 'Guest'}</p>
+              <p className="text-xs text-black capitalize">{user?.role || 'User'}</p>
             </div>
           )}
           <div className="flex space-x-2">
             <button
               onClick={() => navigate('/settings')}
-              className="flex-1 p-2 hover:bg-dark-border rounded-lg"
+              className="flex-1 p-3 hover:bg-dark-border rounded-lg text-black hover:text-black transition-colors"
+              title="Settings"
             >
               <Settings size={20} />
             </button>
             <button
               onClick={handleLogout}
-              className="flex-1 p-2 hover:bg-red-900/20 text-industrial-red rounded-lg"
+              className="flex-1 p-3 hover:bg-red-900/20 text-red-600 hover:text-red-700 rounded-lg transition-colors"
+              title="Logout"
             >
               <LogOut size={20} />
             </button>
@@ -79,7 +81,7 @@ const Layout = ({ children, user, onLogout }: any) => {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
         <div className="h-16 bg-dark-card border-b border-dark-border flex items-center px-6">
-          <h2 className="text-xl font-semibold">Industrial Safety Intelligence Platform</h2>
+          <h2 className="text-xl font-semibold text-black">Industrial Safety Intelligence Platform</h2>
         </div>
 
         {/* Content */}
