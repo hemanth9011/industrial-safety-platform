@@ -36,7 +36,7 @@ const Layout = ({ children, user, onLogout }: any) => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-4">
+        <nav className="flex-1 p-4 space-y-2">
           {menuItems.map((item) => (
             <button
               key={item.path}
@@ -44,7 +44,7 @@ const Layout = ({ children, user, onLogout }: any) => {
               className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-dark-border transition-colors"
             >
               <item.icon size={20} />
-              {sidebarOpen && <span className="ml-2">{item.name}</span>}
+              {sidebarOpen && <span>{item.name}</span>}
             </button>
           ))}
         </nav>
