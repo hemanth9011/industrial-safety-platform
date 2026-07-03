@@ -8,7 +8,7 @@ const GaugeChart = ({ value, max = 100, label, color }: any) => {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="relative w-24 h-24">
+      <div className="relative w-20 h-20">
         <svg className="w-full h-full" viewBox="0 0 100 100">
           <circle
             cx="50"
@@ -29,7 +29,7 @@ const GaugeChart = ({ value, max = 100, label, color }: any) => {
             strokeDashoffset={offset}
             transform="rotate(-90 50 50)"
           />
-          <text x="50" y="50" textAnchor="middle" dy="0.3em" className="text-lg font-bold fill-white">
+          <text x="50" y="50" textAnchor="middle" dy="0.3em" className="text-base font-bold fill-white">
             {value.toFixed(0)}
           </text>
           <text x="50" y="65" textAnchor="middle" dy="0.3em" className="text-xs fill-gray-400">
@@ -43,13 +43,13 @@ const GaugeChart = ({ value, max = 100, label, color }: any) => {
 
 const AnimatedCard = ({ title, value, icon, color }: any) => {
   return (
-    <div className="card-glass p-6 rounded-lg transform hover:scale-105 transition-transform duration-300">
+    <div className="card-glass p-4 rounded-lg transform hover:scale-105 transition-transform duration-300">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-gray-400 text-sm mb-2">{title}</p>
-          <p className={`text-3xl font-bold ${color}`}>{value}</p>
+          <p className="text-gray-400 text-xs mb-1">{title}</p>
+          <p className={`text-2xl font-bold ${color}`}>{value}</p>
         </div>
-        <div className={`text-4xl ${color}`}>{icon}</div>
+        <div className={`text-3xl ${color}`}>{icon}</div>
       </div>
     </div>
   )
@@ -57,9 +57,9 @@ const AnimatedCard = ({ title, value, icon, color }: any) => {
 
 const LineChartComponent = ({ data, title }: any) => {
   return (
-    <div className="card-glass p-6 rounded-lg">
-      <h3 className="text-lg font-semibold mb-4">{title}</h3>
-      <ResponsiveContainer width="100%" height={300}>
+    <div className="card-glass p-4 rounded-lg">
+      <h3 className="text-sm font-semibold mb-3">{title}</h3>
+      <ResponsiveContainer width="100%" height={250}>
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
           <XAxis stroke="rgba(255,255,255,0.5)" />
@@ -75,9 +75,9 @@ const LineChartComponent = ({ data, title }: any) => {
 
 const BarChartComponent = ({ data, title }: any) => {
   return (
-    <div className="card-glass p-6 rounded-lg">
-      <h3 className="text-lg font-semibold mb-4">{title}</h3>
-      <ResponsiveContainer width="100%" height={300}>
+    <div className="card-glass p-4 rounded-lg">
+      <h3 className="text-sm font-semibold mb-3">{title}</h3>
+      <ResponsiveContainer width="100%" height={250}>
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
           <XAxis stroke="rgba(255,255,255,0.5)" />

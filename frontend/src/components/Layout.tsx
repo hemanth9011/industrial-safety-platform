@@ -36,38 +36,41 @@ const Layout = ({ children, user, onLogout }: any) => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-4">
+        <nav className="flex-1 p-4 space-y-2">
           {menuItems.map((item) => (
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
-              className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-dark-border transition-colors whitespace-nowrap"
+              className="w-full flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-dark-border transition-colors text-left"
+              title={item.name}
             >
-              <item.icon size={20} />
-              {sidebarOpen && <span>{item.name}</span>}
+              <item.icon size={20} className="flex-shrink-0" />
+              {sidebarOpen && <span className="truncate">{item.name}</span>}
             </button>
           ))}
         </nav>
 
         {/* User Section */}
-        <div className="p-4 border-t border-dark-border space-y-2">
+        <div className="p-4 border-t border-dark-border space-y-3">
           {sidebarOpen && (
-            <div className="text-sm">
+            <div className="text-sm px-2">
               <p className="text-gray-400">User</p>
               <p className="font-semibold capitalize">{user?.username || 'Guest'}</p>
               <p className="text-xs text-gray-500 capitalize">{user?.role || 'User'}</p>
             </div>
           )}
-          <div className="flex space-x-2">
+          <div className="flex gap-3">
             <button
               onClick={() => navigate('/settings')}
-              className="flex-1 p-2 hover:bg-dark-border rounded-lg"
+              className="flex-1 p-2 hover:bg-dark-border rounded-lg transition-colors"
+              title="Settings"
             >
               <Settings size={20} />
             </button>
             <button
               onClick={handleLogout}
-              className="flex-1 p-2 hover:bg-red-900/20 text-industrial-red rounded-lg"
+              className="flex-1 p-2 hover:bg-red-900/20 text-industrial-red rounded-lg transition-colors"
+              title="Logout"
             >
               <LogOut size={20} />
             </button>
@@ -78,28 +81,8 @@ const Layout = ({ children, user, onLogout }: any) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <div className="h-16 bg-dark-card border-b border-dark-border flex items-center px-6 overflow-x-auto">
-          <div className="flex items-center gap-6 whitespace-nowrap">
-            {[
-              { name: 'Dashboard', icon: '🏠', path: '/' },
-              { name: 'Sensors', icon: '📊', path: '/sensors' },
-              { name: 'Alerts', icon: '⚠️', path: '/alerts' },
-              { name: 'Incidents', icon: '📋', path: '/incidents' },
-              { name: 'Permits', icon: '✅', path: '/permits' },
-              { name: 'Analytics', icon: '📈', path: '/analytics' },
-              { name: 'Compliance', icon: '📖', path: '/compliance' },
-            ].map((item) => (
-              <button
-                key={item.path}
-                onClick={() => navigate(item.path)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-dark-border transition-colors text-sm font-medium"
-                title={item.name}
-              >
-                <span>{item.icon}</span>
-                <span className="hidden sm:inline">{item.name}</span>
-              </button>
-            ))}
-          </div>
+        <div className="h-16 bg-dark-card border-b border-dark-border flex items-center px-6">
+          <h2 className="text-xl font-semibold">Industrial Safety Intelligence Platform</h2>
         </div>
 
         {/* Content */}
