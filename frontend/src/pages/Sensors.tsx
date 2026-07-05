@@ -1,12 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { sensorsAPI } from '../services/api'
 import { BarChartComponent, LineChartComponent } from '../components/Charts'
+import { soundManager } from '../utils/soundManager'
 
 const Sensors = () => {
   const [readings, setReadings] = useState<any[]>([])
   const [stats, setStats] = useState<any>(null)
   const [selectedZone, setSelectedZone] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [soundEnabled, setSoundEnabled] = useState(true)
+  const previousStatusRef = useRef<{ [key: string]: string }>({})
 
   useEffect(() => {
     loadSensorData()
@@ -20,6 +23,11 @@ const Sensors = () => {
         sensorsAPI.getReadings(selectedZone || undefined),
         sensorsAPI.getStats(),
       ])
+      
+      if (soundEnabled) {
+        checkAndPlaySounds(readingsRes.data)
+      }
+      
       setReadings(readingsRes.data)
       setStats(statsRes.data)
     } catch (error) {
@@ -29,6 +37,25 @@ const Sensors = () => {
     }
   }
 
+  const checkAndPlaySounds = (newReadings: any[]) => {
+    newReadings.forEach((reading) => {
+      const key = reading.sensor_id
+      const previousStatus = previousStatusRef.current[key]
+
+      if (previousStatus !== reading.status) {
+        if (reading.status === 'critical') {
+          soundManager.playCritical()
+        } else if (reading.status === 'warning') {
+          soundManager.playWarning()
+        } else if (reading.status === 'normal' && previousStatus !== undefined) {
+          soundManager.playSuccess()
+        }
+      }
+
+      previousStatusRef.current[key] = reading.status
+    })
+  }
+
   if (loading) return <div>Loading sensors...</div>
 
   const zones = ['A', 'B', 'C', 'D']
@@ -36,7 +63,19 @@ const Sensors = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Sensor Readings</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Sensor Readings</h1>
+        <button
+          onClick={() => setSoundEnabled(!soundEnabled)}
+          className={`px-4 py-2 rounded-lg transition-colors ${
+            soundEnabled
+              ? 'bg-industrial-green text-white'
+              : 'bg-dark-border text-gray-400'
+          }`}
+        >
+          {soundEnabled ? '🔔 Sound ON' : '🔕 Sound OFF'}
+        </button>
+      </div>
 
       {/* Filters */}
       <div className="card-glass p-4 rounded-lg flex gap-4 flex-wrap">
