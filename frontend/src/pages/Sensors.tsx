@@ -1,19 +1,16 @@
 import { useState, useEffect, useRef } from 'react'
 import { sensorsAPI } from '../services/api'
-import { sensorAlertSoundManager } from '../utils/soundManager'
 
 const Sensors = () => {
   const [readings, setReadings] = useState<any[]>([])
   const [stats, setStats] = useState<any>(null)
   const [selectedZone, setSelectedZone] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true)
   const [sensorControls, setSensorControls] = useState<{ [key: string]: boolean }>({})
-  const previousStatusRef = useRef<{ [key: string]: string }>({})
 
   useEffect(() => {
     loadSensorData()
-    const interval = setInterval(loadSensorData, 3000)
+    const interval = setInterval(loadSensorData, 2000)
     return () => clearInterval(interval)
   }, [selectedZone])
 
@@ -24,11 +21,6 @@ const Sensors = () => {
         sensorsAPI.getStats(),
       ])
 
-      // Check for status changes and play sounds
-      if (soundEnabled) {
-        checkSensorStatusChanges(readingsRes.data)
-      }
-
       setReadings(readingsRes.data)
       setStats(statsRes.data)
       setLoading(false)
@@ -36,25 +28,6 @@ const Sensors = () => {
       console.error('Error loading sensor data:', error)
       setLoading(false)
     }
-  }
-
-  const checkSensorStatusChanges = (newReadings: any[]) => {
-    newReadings.forEach((reading) => {
-      const sensorKey = reading.sensor_id
-      const previousStatus = previousStatusRef.current[sensorKey]
-
-      if (previousStatus !== reading.status) {
-        if (reading.status === 'critical') {
-          sensorAlertSoundManager.playCriticalSound(sensorKey)
-        } else if (reading.status === 'warning') {
-          sensorAlertSoundManager.playWarningSound(sensorKey)
-        } else if (reading.status === 'offline') {
-          sensorAlertSoundManager.playOfflineSound(sensorKey)
-        }
-      }
-
-      previousStatusRef.current[sensorKey] = reading.status
-    })
   }
 
   const handleSensorControl = async (sensorId: string, action: 'on' | 'off') => {
@@ -174,17 +147,6 @@ const Sensors = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Sensor Control & Monitoring</h1>
-        <button
-          onClick={() => setSoundEnabled(!soundEnabled)}
-          className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-            soundEnabled
-              ? 'bg-industrial-green text-white shadow-lg shadow-industrial-green/30'
-              : 'bg-dark-border text-gray-400 opacity-60'
-          }`}
-          title={soundEnabled ? 'Sound: ON' : 'Sound: OFF'}
-        >
-          {soundEnabled ? '🔔' : '🔕'}
-        </button>
       </div>
 
       {/* Zone Filter */}

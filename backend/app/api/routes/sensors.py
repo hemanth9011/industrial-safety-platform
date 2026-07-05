@@ -12,18 +12,18 @@ router = APIRouter()
 sensor_states = {}
 
 def generate_sensor_reading(sensor_id: str, sensor_type: str, zone: str):
-    """Generate realistic sensor readings"""
+    """Generate realistic sensor readings with varying status"""
     readings = {
-        "temperature": {"min": 15, "max": 35, "unit": "°C"},
-        "pressure": {"min": 0.9, "max": 1.1, "unit": "bar"},
-        "gas": {"min": 0, "max": 100, "unit": "ppm"},
-        "humidity": {"min": 20, "max": 80, "unit": "%"},
-        "smoke": {"min": 0, "max": 1000, "unit": "ppm"},
-        "vibration": {"min": 0, "max": 50, "unit": "mm/s"},
-        "power_usage": {"min": 100, "max": 5000, "unit": "W"},
+        "temperature": {"min": 15, "max": 45, "unit": "°C", "warning": 35, "critical": 40},
+        "pressure": {"min": 0.8, "max": 1.2, "unit": "bar", "warning": 1.05, "critical": 1.15},
+        "gas": {"min": 0, "max": 150, "unit": "ppm", "warning": 80, "critical": 120},
+        "humidity": {"min": 10, "max": 95, "unit": "%", "warning": 75, "critical": 90},
+        "smoke": {"min": 0, "max": 1500, "unit": "ppm", "warning": 800, "critical": 1200},
+        "vibration": {"min": 0, "max": 80, "unit": "mm/s", "warning": 40, "critical": 60},
+        "power_usage": {"min": 100, "max": 8000, "unit": "W", "warning": 6000, "critical": 7500},
     }
     
-    config = readings.get(sensor_type, {"min": 0, "max": 100, "unit": "unit"})
+    config = readings.get(sensor_type, {"min": 0, "max": 100, "unit": "unit", "warning": 70, "critical": 90})
     value = round(random.uniform(config["min"], config["max"]), 2)
     
     # Check if sensor is powered off
@@ -40,6 +40,14 @@ def generate_sensor_reading(sensor_id: str, sensor_type: str, zone: str):
             "is_on": False,
         }
     
+    # Determine status based on thresholds
+    if value >= config["critical"]:
+        status = "critical"
+    elif value >= config["warning"]:
+        status = "warning"
+    else:
+        status = "normal"
+    
     return {
         "id": str(uuid.uuid4()),
         "sensor_id": sensor_id,
@@ -47,7 +55,7 @@ def generate_sensor_reading(sensor_id: str, sensor_type: str, zone: str):
         "value": value,
         "unit": config["unit"],
         "zone": zone,
-        "status": "normal" if value < (config["max"] * 0.7) else "warning",
+        "status": status,
         "timestamp": datetime.utcnow().isoformat(),
         "is_on": True,
     }
@@ -58,7 +66,7 @@ async def get_sensor_readings(
     sensor_type: str = Query(None),
     db: Session = Depends(get_db)
 ):
-    """Get sensor readings"""
+    """Get sensor readings with varying statuses"""
     readings = []
     zones = ["A", "B", "C", "D"]
     sensor_types = ["temperature", "pressure", "gas", "humidity", "smoke", "vibration", "power_usage"]
