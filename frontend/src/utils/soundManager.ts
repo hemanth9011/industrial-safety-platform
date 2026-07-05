@@ -1,6 +1,7 @@
-// Utility to generate and play sounds
-export class SoundManager {
+// Utility to generate and play sounds for IoT sensor alerts
+export class SensorAlertSoundManager {
   private audioContext: AudioContext | null = null
+  private isPlaying: boolean = false
 
   private getAudioContext(): AudioContext {
     if (!this.audioContext) {
@@ -9,8 +10,11 @@ export class SoundManager {
     return this.audioContext
   }
 
-  // Play warning beep (single tone)
-  playWarning(): void {
+  // Warning sound - single beep at 800Hz
+  playWarningSound(): void {
+    if (this.isPlaying) return
+    this.isPlaying = true
+
     const ctx = this.getAudioContext()
     const oscillator = ctx.createOscillator()
     const gainNode = ctx.createGain()
@@ -21,15 +25,22 @@ export class SoundManager {
     oscillator.frequency.value = 800 // Hz
     oscillator.type = 'sine'
 
-    gainNode.gain.setValueAtTime(0.3, ctx.currentTime)
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5)
+    gainNode.gain.setValueAtTime(0.5, ctx.currentTime)
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8)
 
     oscillator.start(ctx.currentTime)
-    oscillator.stop(ctx.currentTime + 0.5)
+    oscillator.stop(ctx.currentTime + 0.8)
+
+    setTimeout(() => {
+      this.isPlaying = false
+    }, 800)
   }
 
-  // Play critical alert (double beep)
-  playCritical(): void {
+  // Critical/Alert sound - rapid double beeps at 1000Hz
+  playCriticalSound(): void {
+    if (this.isPlaying) return
+    this.isPlaying = true
+
     const ctx = this.getAudioContext()
 
     const playBeep = (freq: number, duration: number, delay: number) => {
@@ -40,44 +51,50 @@ export class SoundManager {
       gainNode.connect(ctx.destination)
 
       oscillator.frequency.value = freq
-      oscillator.type = 'sine'
+      oscillator.type = 'square'
 
-      gainNode.gain.setValueAtTime(0.4, ctx.currentTime + delay)
+      gainNode.gain.setValueAtTime(0.6, ctx.currentTime + delay)
       gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + delay + duration)
 
       oscillator.start(ctx.currentTime + delay)
       oscillator.stop(ctx.currentTime + delay + duration)
     }
 
-    playBeep(1000, 0.3, 0) // First beep
-    playBeep(1000, 0.3, 0.4) // Second beep
+    // Triple beeps for critical alert
+    playBeep(1200, 0.2, 0)
+    playBeep(1200, 0.2, 0.3)
+    playBeep(1200, 0.2, 0.6)
+
+    setTimeout(() => {
+      this.isPlaying = false
+    }, 1000)
   }
 
-  // Play success sound
-  playSuccess(): void {
+  // Offline/Error sound - low frequency alert
+  playOfflineSound(): void {
+    if (this.isPlaying) return
+    this.isPlaying = true
+
     const ctx = this.getAudioContext()
+    const oscillator = ctx.createOscillator()
+    const gainNode = ctx.createGain()
 
-    const playTone = (freq: number, duration: number, delay: number) => {
-      const oscillator = ctx.createOscillator()
-      const gainNode = ctx.createGain()
+    oscillator.connect(gainNode)
+    gainNode.connect(ctx.destination)
 
-      oscillator.connect(gainNode)
-      gainNode.connect(ctx.destination)
+    oscillator.frequency.value = 400 // Hz
+    oscillator.type = 'sine'
 
-      oscillator.frequency.value = freq
-      oscillator.type = 'sine'
+    gainNode.gain.setValueAtTime(0.4, ctx.currentTime)
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1)
 
-      gainNode.gain.setValueAtTime(0.2, ctx.currentTime + delay)
-      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + delay + duration)
+    oscillator.start(ctx.currentTime)
+    oscillator.stop(ctx.currentTime + 1)
 
-      oscillator.start(ctx.currentTime + delay)
-      oscillator.stop(ctx.currentTime + delay + duration)
-    }
-
-    playTone(523, 0.2, 0) // C
-    playTone(659, 0.2, 0.2) // E
-    playTone(784, 0.4, 0.4) // G
+    setTimeout(() => {
+      this.isPlaying = false
+    }, 1000)
   }
 }
 
-export const soundManager = new SoundManager()
+export const sensorAlertSoundManager = new SensorAlertSoundManager()

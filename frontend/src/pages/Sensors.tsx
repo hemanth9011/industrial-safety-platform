@@ -8,6 +8,7 @@ const Sensors = () => {
   const [selectedZone, setSelectedZone] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true)
+  const [sensorControls, setSensorControls] = useState<{ [key: string]: boolean }>({})
   const previousStatusRef = useRef<{ [key: string]: string }>({})
 
   useEffect(() => {
@@ -42,9 +43,6 @@ const Sensors = () => {
       const sensorKey = reading.sensor_id
       const previousStatus = previousStatusRef.current[sensorKey]
 
-      // Only play sound if:
-      // 1. Status changed
-      // 2. New status is warning, critical, or offline (NOT normal)
       if (previousStatus !== reading.status) {
         if (reading.status === 'critical') {
           sensorAlertSoundManager.playCriticalSound()
@@ -53,18 +51,28 @@ const Sensors = () => {
         } else if (reading.status === 'offline') {
           sensorAlertSoundManager.playOfflineSound()
         }
-        // No sound for normal status
       }
 
       previousStatusRef.current[sensorKey] = reading.status
     })
   }
 
+  const handleSensorControl = async (sensorId: string, action: 'on' | 'off') => {
+    try {
+      await sensorsAPI.controlSensor(sensorId, action)
+      setSensorControls((prev) => ({
+        ...prev,
+        [sensorId]: action === 'on',
+      }))
+      // Reload data immediately
+      loadSensorData()
+    } catch (error) {
+      console.error(`Error turning sensor ${action}:`, error)
+    }
+  }
+
   if (loading) return <div className="p-8 text-center">Loading sensors...</div>
 
-  const zones = ['A', 'B', 'C', 'D']
-
-  // Separate sensors by status
   const normalSensors = readings.filter((r) => r.status === 'normal')
   const warningSensors = readings.filter((r) => r.status === 'warning')
   const criticalSensors = readings.filter((r) => r.status === 'critical')
@@ -96,6 +104,7 @@ const Sensors = () => {
     }
 
     const badge = getStatusBadge(reading.status)
+    const isOn = sensorControls[reading.sensor_id] !== false
 
     return (
       <div className={`card-glass p-4 rounded-lg ${getStatusStyle(reading.status)}`}>
@@ -109,7 +118,7 @@ const Sensors = () => {
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 mb-3">
           <div>
             <p className="text-xs text-gray-400">Type</p>
             <p className="text-sm font-semibold">{reading.sensor_type}</p>
@@ -122,13 +131,41 @@ const Sensors = () => {
           </div>
         </div>
 
-        <div className="mt-3 pt-3 border-t border-dark-border">
+        <div className="mt-3 pt-3 border-t border-dark-border mb-3">
           <p className="text-2xl font-bold">
             {reading.value} <span className="text-xs text-gray-400">{reading.unit}</span>
           </p>
         </div>
 
-        <p className="text-xs text-gray-500 mt-2">{new Date(reading.timestamp).toLocaleTimeString()}</p>
+        {/* Control Buttons */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleSensorControl(reading.sensor_id, 'on')}
+            disabled={isOn}
+            className={`flex-1 px-3 py-2 rounded font-semibold text-xs transition-all ${
+              isOn
+                ? 'bg-industrial-green text-white cursor-default'
+                : 'bg-dark-border text-gray-400 hover:bg-industrial-green/20'
+            }`}
+            title="Turn sensor ON"
+          >
+            ⚡ ON
+          </button>
+          <button
+            onClick={() => handleSensorControl(reading.sensor_id, 'off')}
+            disabled={!isOn}
+            className={`flex-1 px-3 py-2 rounded font-semibold text-xs transition-all ${
+              !isOn
+                ? 'bg-industrial-red text-white cursor-default'
+                : 'bg-dark-border text-gray-400 hover:bg-industrial-red/20'
+            }`}
+            title="Turn sensor OFF"
+          >
+            🔌 OFF
+          </button>
+        </div>
+
+        <p className="text-xs text-gray-500 mt-3">{new Date(reading.timestamp).toLocaleTimeString()}</p>
       </div>
     )
   }
@@ -136,7 +173,7 @@ const Sensors = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Sensor Readings</h1>
+        <h1 className="text-3xl font-bold">Sensor Control & Monitoring</h1>
         <button
           onClick={() => setSoundEnabled(!soundEnabled)}
           className={`px-4 py-2 rounded-lg font-semibold transition-all ${

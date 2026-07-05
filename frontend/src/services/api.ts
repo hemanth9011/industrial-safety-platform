@@ -39,6 +39,10 @@ export const sensorsAPI = {
     api.get('/api/sensors/readings', { params: { zone, sensor_type: type } }),
   getStats: () => api.get('/api/sensors/stats'),
   createReading: (data: any) => api.post('/api/sensors/reading', data),
+  controlSensor: (sensorId: string, action: 'on' | 'off') =>
+    api.post(`/api/sensors/control/${sensorId}`, {}, { params: { action } }),
+  getSensorStatus: (sensorId: string) =>
+    api.get(`/api/sensors/control/${sensorId}`),
 }
 
 // Alert APIs
