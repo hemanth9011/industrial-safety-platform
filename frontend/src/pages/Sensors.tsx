@@ -45,11 +45,11 @@ const Sensors = () => {
 
       if (previousStatus !== reading.status) {
         if (reading.status === 'critical') {
-          sensorAlertSoundManager.playCriticalSound()
+          sensorAlertSoundManager.playCriticalSound(sensorKey)
         } else if (reading.status === 'warning') {
-          sensorAlertSoundManager.playWarningSound()
+          sensorAlertSoundManager.playWarningSound(sensorKey)
         } else if (reading.status === 'offline') {
-          sensorAlertSoundManager.playOfflineSound()
+          sensorAlertSoundManager.playOfflineSound(sensorKey)
         }
       }
 

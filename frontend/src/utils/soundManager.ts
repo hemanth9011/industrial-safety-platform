@@ -2,6 +2,8 @@
 export class SensorAlertSoundManager {
   private audioContext: AudioContext | null = null
   private isPlaying: boolean = false
+  private lastAlertTime: { [key: string]: number } = {}
+  private ALERT_COOLDOWN = 5000 // 5 seconds between alerts for same sensor
 
   private getAudioContext(): AudioContext {
     if (!this.audioContext) {
@@ -10,8 +12,24 @@ export class SensorAlertSoundManager {
     return this.audioContext
   }
 
+  // Check if we should play alert (cooldown mechanism)
+  private shouldPlayAlert(sensorId: string): boolean {
+    const now = Date.now()
+    const lastTime = this.lastAlertTime[sensorId] || 0
+    
+    if (now - lastTime >= this.ALERT_COOLDOWN) {
+      this.lastAlertTime[sensorId] = now
+      return true
+    }
+    return false
+  }
+
   // Warning sound - single beep at 800Hz
-  playWarningSound(): void {
+  playWarningSound(sensorId?: string): void {
+    if (sensorId && !this.shouldPlayAlert(sensorId)) {
+      return
+    }
+
     if (this.isPlaying) return
     this.isPlaying = true
 
@@ -37,7 +55,11 @@ export class SensorAlertSoundManager {
   }
 
   // Critical/Alert sound - rapid double beeps at 1000Hz
-  playCriticalSound(): void {
+  playCriticalSound(sensorId?: string): void {
+    if (sensorId && !this.shouldPlayAlert(sensorId)) {
+      return
+    }
+
     if (this.isPlaying) return
     this.isPlaying = true
 
@@ -71,7 +93,11 @@ export class SensorAlertSoundManager {
   }
 
   // Offline/Error sound - low frequency alert
-  playOfflineSound(): void {
+  playOfflineSound(sensorId?: string): void {
+    if (sensorId && !this.shouldPlayAlert(sensorId)) {
+      return
+    }
+
     if (this.isPlaying) return
     this.isPlaying = true
 
@@ -94,6 +120,16 @@ export class SensorAlertSoundManager {
     setTimeout(() => {
       this.isPlaying = false
     }, 1000)
+  }
+
+  // Reset alert cooldown for a sensor (for manual testing)
+  resetAlertCooldown(sensorId: string): void {
+    delete this.lastAlertTime[sensorId]
+  }
+
+  // Reset all cooldowns
+  resetAllCooldowns(): void {
+    this.lastAlertTime = {}
   }
 }
 
