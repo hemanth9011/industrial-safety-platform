@@ -8,7 +8,7 @@ const GaugeChart = ({ value, max = 100, label, color }: any) => {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="relative w-32 h-32">
+      <div className="relative w-24 h-24">
         <svg className="w-full h-full" viewBox="0 0 100 100">
           <circle
             cx="50"
@@ -29,7 +29,7 @@ const GaugeChart = ({ value, max = 100, label, color }: any) => {
             strokeDashoffset={offset}
             transform="rotate(-90 50 50)"
           />
-          <text x="50" y="50" textAnchor="middle" dy="0.3em" className="text-2xl font-bold fill-white">
+          <text x="50" y="50" textAnchor="middle" dy="0.3em" className="text-lg font-bold fill-white">
             {value.toFixed(0)}
           </text>
           <text x="50" y="65" textAnchor="middle" dy="0.3em" className="text-xs fill-gray-400">
