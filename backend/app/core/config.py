@@ -14,7 +14,9 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "your-secret-key-change-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
-    
+    # Gemini AI
+    GEMINI_API_KEY: str = ""
+
     # CORS
     ALLOWED_ORIGINS: List[str] = [
         "http://localhost:3000",

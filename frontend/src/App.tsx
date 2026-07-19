@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import Layout from './components/Layout'
+import AIChat from './components/AIChat'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Sensors from './pages/Sensors'
@@ -71,6 +72,7 @@ function App() {
           <Route path="/permits" element={<Permits />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/compliance" element={<Compliance />} />
+          <Route path="/ai" element={<AIChat />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

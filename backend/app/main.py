@@ -6,7 +6,17 @@ import logging
 from pathlib import Path
 
 from app.core.config import settings
-from app.api.routes import auth, dashboard, sensors, alerts, incidents, permits, predictions, compliance
+from app.api.routes import (
+    auth,
+    dashboard,
+    sensors,
+    alerts,
+    incidents,
+    permits,
+    predictions,
+    compliance,
+    ai
+)
 from app.core.database import engine, Base
 from app.core.websocket import manager
 
@@ -58,7 +68,7 @@ app.include_router(incidents.router, prefix="/api/incidents", tags=["Incidents"]
 app.include_router(permits.router, prefix="/api/permits", tags=["Permits"])
 app.include_router(predictions.router, prefix="/api/predictions", tags=["Predictions"])
 app.include_router(compliance.router, prefix="/api/compliance", tags=["Compliance"])
-
+app.include_router(ai.router, prefix="/api/ai", tags=["AI Assistant"])
 # WebSocket endpoint
 @app.websocket("/ws/dashboard")
 async def websocket_endpoint(websocket):

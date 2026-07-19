@@ -1,18 +1,5 @@
 import { useState } from 'react'
-import {
-  Menu,
-  X,
-  LogOut,
-  Settings,
-  Home,
-  Activity,
-  AlertCircle,
-  FileText,
-  CheckSquare,
-  BarChart3,
-  BookOpen,
-  Bot
-} from 'lucide-react'
+import { Menu, X, LogOut, Settings, Home, Activity, AlertCircle, FileText, CheckSquare, BarChart3, BookOpen } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 const Layout = ({ children, user, onLogout }: any) => {
@@ -27,7 +14,6 @@ const Layout = ({ children, user, onLogout }: any) => {
     { name: 'Permits', icon: CheckSquare, path: '/permits' },
     { name: 'Analytics', icon: BarChart3, path: '/analytics' },
     { name: 'Compliance', icon: BookOpen, path: '/compliance' },
-    { name: 'AI Assistant', icon: Bot, path: '/ai' },
   ]
 
   const handleLogout = () => {
@@ -37,16 +23,10 @@ const Layout = ({ children, user, onLogout }: any) => {
 
   return (
     <div className="flex h-screen bg-dark-bg">
-
       {/* Sidebar */}
-      <div
-        className={`${
-          sidebarOpen ? 'w-64' : 'w-20'
-        } bg-dark-card border-r border-dark-border transition-all duration-300 flex flex-col`}
-      >
+      <div className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-dark-card border-r border-dark-border transition-all duration-300 flex flex-col`}>
         <div className="p-4 border-b border-dark-border flex items-center justify-between">
           {sidebarOpen && <h1 className="font-bold text-lg">ISIP</h1>}
-
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="p-2 hover:bg-dark-border rounded-lg"
@@ -65,39 +45,32 @@ const Layout = ({ children, user, onLogout }: any) => {
               title={item.name}
             >
               <item.icon size={20} className="flex-shrink-0" />
-
-              {sidebarOpen && (
-                <span className="truncate">{item.name}</span>
-              )}
+              {sidebarOpen && <span className="truncate">{item.name}</span>}
             </button>
           ))}
         </nav>
 
-        {/* User */}
+        {/* User Section */}
         <div className="p-4 border-t border-dark-border space-y-3">
           {sidebarOpen && (
             <div className="text-sm px-2">
               <p className="text-gray-400">User</p>
-              <p className="font-semibold capitalize">
-                {user?.username || 'Guest'}
-              </p>
-              <p className="text-xs text-gray-500 capitalize">
-                {user?.role || 'User'}
-              </p>
+              <p className="font-semibold capitalize">{user?.username || 'Guest'}</p>
+              <p className="text-xs text-gray-500 capitalize">{user?.role || 'User'}</p>
             </div>
           )}
-
           <div className="flex gap-3">
             <button
               onClick={() => navigate('/settings')}
               className="flex-1 p-2 hover:bg-dark-border rounded-lg transition-colors"
+              title="Settings"
             >
               <Settings size={20} />
             </button>
-
             <button
               onClick={handleLogout}
               className="flex-1 p-2 hover:bg-red-900/20 text-industrial-red rounded-lg transition-colors"
+              title="Logout"
             >
               <LogOut size={20} />
             </button>
@@ -107,19 +80,15 @@ const Layout = ({ children, user, onLogout }: any) => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-
-        {/* Header */}
+        {/* Top Bar */}
         <div className="h-16 bg-dark-card border-b border-dark-border flex items-center px-6">
-          <h2 className="text-xl font-semibold">
-            Industrial Safety Intelligence Platform
-          </h2>
+          <h2 className="text-xl font-semibold">Industrial Safety Intelligence Platform</h2>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-auto p-6">
           {children}
         </div>
-
       </div>
     </div>
   )
