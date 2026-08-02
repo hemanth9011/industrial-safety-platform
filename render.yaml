@@ -2,7 +2,7 @@ services:
   - type: web
     name: isip-backend
     env: python
-    plan: standard
+    plan: free
     buildCommand: pip install -r requirements-fast.txt
     startCommand: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
     healthCheckPath: /health
@@ -11,16 +11,16 @@ services:
         value: sqlite:///./data/industrial_safety.db
       - key: SECRET_KEY
         generateValue: true
-      - key: ALGORITHM
-        value: HS256
 
   - type: web
     name: isip-frontend
     env: node
-    plan: standard
+    plan: free
     buildCommand: npm install --legacy-peer-deps && npm run build
-    startCommand: npm run preview -- --host 0.0.0.0
+    startCommand: npx serve -s dist -l 5173
     staticSite: false
     envVars:
       - key: VITE_API_URL
         value: https://isip-backend.onrender.com
+      - key: NODE_ENV
+        value: production
