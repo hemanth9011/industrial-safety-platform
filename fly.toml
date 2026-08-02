@@ -1,27 +1,46 @@
-app = "isip-platform"
+app = "industrial-safety-isip"
 primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
 
 [env]
   DATABASE_URL = "sqlite:///./data/industrial_safety.db"
   PYTHONUNBUFFERED = "1"
+  PYTHONOPTIMIZE = "2"
+  NODE_ENV = "production"
 
 [[services]]
-  protocol = "tcp"
   internal_port = 8000
-  processes = ["backend"]
-
+  protocol = "tcp"
+  
   [services.concurrency]
-    hard_limit = 25
-    soft_limit = 20
+    hard_limit = 20
+    soft_limit = 15
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
 
 [[services]]
-  protocol = "tcp"
   internal_port = 5173
-  processes = ["frontend"]
+  protocol = "tcp"
 
-  [services.concurrency]
-    hard_limit = 25
-    soft_limit = 20
+  [[services.ports]]
+    port = 3000
+    handlers = ["http"]
+    force_https = true
 
-[build]
-  builder = "paketobuildpacks/builder:base"
+[checks]
+  [checks.alive]
+    type = "http"
+    interval = "10s"
+    timeout = "5s"
+    grace_period = "5s"
+    method = "get"
+    path = "/health"
