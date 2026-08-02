@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import logging
 from pathlib import Path
+import sys
 
 from app.core.config import settings
 from app.api.routes import (
@@ -22,7 +23,8 @@ from app.core.websocket import manager
 # Configure logging
 logging.basicConfig(
     level=getattr(logging, settings.LOG_LEVEL),
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    stream=sys.stdout
 )
 logger = logging.getLogger(__name__)
 
@@ -31,8 +33,11 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting Industrial Safety Intelligence Platform")
-    Base.metadata.create_all(bind=engine)
-    logger.info("Database tables created")
+    try:
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database tables created successfully")
+    except Exception as e:
+        logger.error(f"Database error: {e}")
     yield
     # Shutdown
     logger.info("Shutting down application")
@@ -41,7 +46,9 @@ app = FastAPI(
     title="Industrial Safety Intelligence Platform",
     description="AI-powered industrial safety monitoring system",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    docs_url="/api/docs",
+    openapi_url="/api/openapi.json"
 )
 
 # CORS middleware
@@ -53,10 +60,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Health check
+# Health check - lightweight endpoint
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "version": "1.0.0"}
+    return {"status": "ok"}
+
+# Ready check for deployment
+@app.get("/ready")
+async def ready_check():
+    try:
+        # Quick database check
+        from app.core.database import SessionLocal
+        db = SessionLocal()
+        db.execute("SELECT 1")
+        db.close()
+        return {"status": "ready"}
+    except Exception as e:
+        logger.error(f"Ready check failed: {e}")
+        return {"status": "not_ready"}, 503
 
 # Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
@@ -83,4 +104,11 @@ async def websocket_endpoint(websocket):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # Use uvloop for better performance
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=8000,
+        log_level="info",
+        access_log=True
+    )
