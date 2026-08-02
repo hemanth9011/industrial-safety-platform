@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_STAGE: backend
+    container_name: isip-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./data/industrial_safety.db
+      - SECRET_KEY=your-secret-key-change-in-production
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - isip-network
+    command: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  frontend:
+    image: node:18-alpine
+    container_name: isip-frontend-ngrok
+    ports:
+      - "5173:5173"
+    working_dir: /app
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - NODE_ENV=production
+    volumes:
+      - ./frontend:/app
+    networks:
+      - isip-network
+    command: sh -c "npm install --legacy-peer-deps && npm run build && npx serve -s dist -l 5173"
+
+networks:
+  isip-network:
+    driver: bridge
