@@ -1,9 +1,9 @@
-run = "docker-compose -f docker-compose-fast.yml up"
-onBoot = "docker-compose -f docker-compose-fast.yml up -d"
+run = "npm install --legacy-peer-deps && pip install -r requirements-fast.txt && npx concurrently \"python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload\" \"npm run dev\""
+onBoot = ""
 
-entrypoint = "docker-compose-fast.yml"
+entrypoint = "backend/app/main.py"
 
-hidden = [".git", ".github", "*.md"]
+hidden = [".git", ".github"]
 
 modules = ["python-3.11", "nodejs-18"]
 
@@ -12,6 +12,11 @@ channel = "stable-23.11"
 
 [languages.python]
 pattern = "**/*.py"
+[languages.python.languageServer]
+start = "pylsp"
 
 [languages.javascript]
 pattern = "**/*.js"
+
+[deployment]
+run = ["npm install --legacy-peer-deps", "pip install -r requirements-fast.txt", "npm run build", "python -m uvicorn app.main:app --host 0.0.0.0 --port 8000"]
