@@ -1,0 +1,17 @@
+run = "docker-compose -f docker-compose-fast.yml up"
+onBoot = "docker-compose -f docker-compose-fast.yml up -d"
+
+entrypoint = "docker-compose-fast.yml"
+
+hidden = [".git", ".github", "*.md"]
+
+modules = ["python-3.11", "nodejs-18"]
+
+[nix]
+channel = "stable-23.11"
+
+[languages.python]
+pattern = "**/*.py"
+
+[languages.javascript]
+pattern = "**/*.js"
