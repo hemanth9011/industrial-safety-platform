@@ -15,10 +15,12 @@ class Settings(BaseSettings):
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
-    # Gemini AI
-    GEMINI_API_KEY: str = ""
+    
+    # AI Services
+    GROK_API_KEY: str = os.getenv("GROK_API_KEY", "")
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
 
-    # CORS - Allow Render domains
+    # CORS - Allow Render domains and Replit
     ALLOWED_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://localhost:5173",
@@ -26,6 +28,7 @@ class Settings(BaseSettings):
         "http://127.0.0.1:5173",
         "https://isip-frontend.onrender.com",
         "https://*.onrender.com",
+        "https://*.replit.dev",
     ]
     
     # Logging

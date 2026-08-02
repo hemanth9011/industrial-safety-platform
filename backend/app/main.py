@@ -15,7 +15,8 @@ from app.api.routes import (
     incidents,
     permits,
     predictions,
-    compliance
+    compliance,
+    grok
 )
 from app.core.database import engine, Base
 from app.core.websocket import manager
@@ -44,7 +45,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Industrial Safety Intelligence Platform",
-    description="AI-powered industrial safety monitoring system",
+    description="AI-powered industrial safety monitoring system with Grok AI",
     version="1.0.0",
     lifespan=lifespan,
     docs_url="/api/docs",
@@ -88,6 +89,7 @@ app.include_router(incidents.router, prefix="/api/incidents", tags=["Incidents"]
 app.include_router(permits.router, prefix="/api/permits", tags=["Permits"])
 app.include_router(predictions.router, prefix="/api/predictions", tags=["Predictions"])
 app.include_router(compliance.router, prefix="/api/compliance", tags=["Compliance"])
+app.include_router(grok.router, prefix="/api/grok", tags=["Grok AI"])
 
 # WebSocket endpoint
 @app.websocket("/ws/dashboard")
