@@ -22,3 +22,6 @@ requests==2.31.0
 
 # Logging
 python-json-logger==2.0.7
+
+# AI & ML (Simplified - compatible versions only)
+numpy==1.24.3
