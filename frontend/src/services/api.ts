@@ -7,6 +7,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000, // Increased from default 0 to 30 seconds for cold starts
 })
 
 // Add token to requests
@@ -17,6 +18,25 @@ api.interceptors.request.use((config) => {
   }
   return config
 })
+
+// Retry logic for failed requests
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const config = error.config
+    if (!config || !config.retry) {
+      config.retry = 0
+    }
+    config.retry += 1
+    
+    // Retry up to 2 times on timeout/network errors
+    if (config.retry <= 2 && (error.code === 'ECONNABORTED' || !error.response)) {
+      await new Promise((resolve) => setTimeout(resolve, 1000 * config.retry))
+      return api(config)
+    }
+    return Promise.reject(error)
+  }
+)
 
 // Auth APIs
 export const authAPI = {
