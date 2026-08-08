@@ -7,6 +7,15 @@ import json
 class AIRobotAgent:
     """Floating AI Robot Agent for continuous monitoring and supervision"""
     
+    # Sensor thresholds
+    THRESHOLDS = {
+        "temperature": {"warning": 35, "critical": 40},
+        "pressure": {"warning": 1.05, "critical": 1.15},
+        "gas": {"warning": 80, "critical": 120},
+        "humidity": {"warning": 75, "critical": 90},
+        "smoke": {"warning": 800, "critical": 1200}
+    }
+    
     def __init__(self, gemini_key: Optional[str] = None, twilio_key: Optional[str] = None):
         self.gemini_api_key = gemini_key or os.getenv("GEMINI_API_KEY", "")
         self.twilio_account_sid = os.getenv("TWILIO_ACCOUNT_SID", "")
@@ -16,10 +25,53 @@ class AIRobotAgent:
         self.gemini_base_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
         self.is_monitoring = False
         
+    def check_sensor_status(self, sensor_data: dict) -> dict:
+        """Check sensor thresholds and determine alert level"""
+        status = {
+            "level": "normal",
+            "critical_sensors": [],
+            "warning_sensors": [],
+            "details": {}
+        }
+        
+        for sensor, value in sensor_data.items():
+            if value is None:
+                continue
+                
+            if sensor in self.THRESHOLDS:
+                thresholds = self.THRESHOLDS[sensor]
+                
+                if value >= thresholds["critical"]:
+                    status["level"] = "critical"
+                    status["critical_sensors"].append({
+                        "sensor": sensor,
+                        "value": value,
+                        "threshold": thresholds["critical"]
+                    })
+                    status["details"][sensor] = f"CRITICAL: {value} (threshold: {thresholds['critical']})"
+                    
+                elif value >= thresholds["warning"]:
+                    if status["level"] != "critical":
+                        status["level"] = "warning"
+                    status["warning_sensors"].append({
+                        "sensor": sensor,
+                        "value": value,
+                        "threshold": thresholds["warning"]
+                    })
+                    status["details"][sensor] = f"WARNING: {value} (threshold: {thresholds['warning']})"
+                    
+                else:
+                    status["details"][sensor] = f"NORMAL: {value}"
+        
+        return status
+    
     async def analyze_all_data(self, sensor_data: dict, alerts_data: list, incidents_data: list) -> dict:
         """AI Robot analyzes ALL sensor data, alerts, and incidents"""
         if not self.gemini_api_key:
             return {"error": "Gemini API key not configured"}
+        
+        # Check sensor status
+        sensor_status = self.check_sensor_status(sensor_data)
         
         summary = f"""You are an AI Robot Supervisor Agent. Monitor and analyze ALL industrial safety data:
 
@@ -30,17 +82,22 @@ SENSOR READINGS:
 - Humidity: {sensor_data.get('humidity', 'N/A')}% (Warning: 75%, Critical: 90%)
 - Smoke: {sensor_data.get('smoke', 'N/A')} ppm (Warning: 800, Critical: 1200)
 
+SENSOR STATUS: {sensor_status['level'].upper()}
+Critical Sensors: {sensor_status['critical_sensors']}
+Warning Sensors: {sensor_status['warning_sensors']}
+
 ACTIVE ALERTS: {len(alerts_data)} alerts
-{json.dumps(alerts_data[:3], indent=2)}
+{json.dumps(alerts_data[:3], indent=2) if alerts_data else 'No alerts'}
 
 INCIDENTS: {len(incidents_data)} incidents
-{json.dumps(incidents_data[:3], indent=2)}
+{json.dumps(incidents_data[:3], indent=2) if incidents_data else 'No incidents'}
 
 Provide:
 1. Overall Safety Status (CRITICAL/HIGH/MEDIUM/LOW)
 2. Most Urgent Issues (top 3)
-3. Recommended Actions for Supervisor
-4. Risk Assessment"""
+3. Recommended Actions for Supervisor (numbered list, action-focused)
+4. Risk Assessment (score 1-10)
+5. Immediate Actions Required"""
 
         try:
             async with httpx.AsyncClient() as client:
@@ -51,7 +108,7 @@ Provide:
                         "contents": [{"parts": [{"text": summary}]}],
                         "generationConfig": {
                             "temperature": 0.7,
-                            "maxOutputTokens": 1500
+                            "maxOutputTokens": 2000
                         }
                     },
                     timeout=30.0
@@ -62,6 +119,7 @@ Provide:
                     analysis = data["candidates"][0]["content"]["parts"][0]["text"]
                     return {
                         "analysis": analysis,
+                        "sensor_status": sensor_status,
                         "timestamp": datetime.now().isoformat(),
                         "status": "success"
                     }
@@ -89,10 +147,9 @@ Provide:
                 url = f"https://api.twilio.com/2010-04-01/Accounts/{self.twilio_account_sid}/Messages.json"
                 
                 data = {
-                    "From": self.twilio_phone,
-                    "To": target_phone,
-                    "Body": message,
-                    "MessagingServiceSid": self.twilio_account_sid
+                    "From": f"whatsapp:{self.twilio_phone}",
+                    "To": f"whatsapp:{target_phone}",
+                    "Body": message
                 }
                 
                 response = await client.post(url, data=data, auth=auth, timeout=30.0)
@@ -119,6 +176,9 @@ Provide:
     
     async def monitor_and_alert(self, sensor_data: dict, alerts_data: list, incidents_data: list) -> dict:
         """AI Robot continuously monitors and sends alerts"""
+        # Check sensor thresholds
+        sensor_status = self.check_sensor_status(sensor_data)
+        
         # Analyze all data
         analysis_result = await self.analyze_all_data(sensor_data, alerts_data, incidents_data)
         
@@ -127,46 +187,79 @@ Provide:
         
         analysis = analysis_result.get("analysis", "")
         
-        # Check if critical
-        if "CRITICAL" in analysis:
+        # CRITICAL Alert
+        if sensor_status["level"] == "critical" or "CRITICAL" in analysis:
+            critical_details = "\n".join([
+                f"🔴 {s['sensor'].upper()}: {s['value']} (Critical: {s['threshold']})"
+                for s in sensor_status["critical_sensors"]
+            ])
+            
             critical_message = f"""🚨 CRITICAL ALERT from AI Robot Supervisor 🚨
 
-{analysis[:500]}...
+CRITICAL SENSOR VIOLATIONS:
+{critical_details}
+
+AI ANALYSIS:
+{analysis[:600]}...
+
+ACTIVE INCIDENTS: {len(incidents_data)}
+ALERT COUNT: {len(alerts_data)}
 
 Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
-Active Incidents: {len(incidents_data)}
-Alert Count: {len(alerts_data)}
-
-Action Required IMMEDIATELY!"""
+⚡ ACTION REQUIRED IMMEDIATELY! ⚡"""
             
             # Send WhatsApp alert
             whatsapp_result = await self.send_whatsapp_alert(critical_message)
             
             return {
                 "status": "critical_alert_sent",
+                "alert_level": "CRITICAL",
+                "sensor_status": sensor_status,
                 "analysis": analysis,
                 "whatsapp": whatsapp_result,
                 "timestamp": datetime.now().isoformat()
             }
-        elif "HIGH" in analysis:
+        
+        # WARNING Alert
+        elif sensor_status["level"] == "warning" or "HIGH" in analysis or "HIGH RISK" in analysis:
+            warning_details = "\n".join([
+                f"⚠️ {s['sensor'].upper()}: {s['value']} (Warning: {s['threshold']})"
+                for s in sensor_status["warning_sensors"]
+            ])
+            
             warning_message = f"""⚠️ WARNING from AI Robot Supervisor ⚠️
 
-{analysis[:300]}...
+WARNING SENSOR LEVELS:
+{warning_details}
 
-Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"""
+AI ANALYSIS:
+{analysis[:400]}...
+
+INCIDENTS: {len(incidents_data)}
+ALERTS: {len(alerts_data)}
+
+Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+Please monitor closely and prepare safety protocols."""
             
             whatsapp_result = await self.send_whatsapp_alert(warning_message)
             
             return {
                 "status": "warning_alert_sent",
+                "alert_level": "WARNING",
+                "sensor_status": sensor_status,
                 "analysis": analysis,
                 "whatsapp": whatsapp_result,
                 "timestamp": datetime.now().isoformat()
             }
+        
+        # Normal monitoring
         else:
             return {
                 "status": "monitoring",
+                "alert_level": "NORMAL",
+                "sensor_status": sensor_status,
                 "analysis": analysis,
                 "timestamp": datetime.now().isoformat()
             }
