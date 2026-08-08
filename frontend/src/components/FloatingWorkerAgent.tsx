@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { ChevronDown, Send, AlertCircle } from 'lucide-react'
-import Worker3D from './Worker3D'
+import { ChevronDown, AlertCircle } from 'lucide-react'
+import WorkerAvatar from './WorkerAvatar'
 
 interface RobotMessage {
   id: string
@@ -112,13 +112,13 @@ export default function FloatingWorkerAgent() {
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
-      {/* Floating Worker Button with 3D Preview */}
+      {/* Floating Worker Button with Avatar */}
       <button
         onClick={() => {
           setIsOpen(!isOpen)
           setIsMinimized(false)
         }}
-        className={`relative w-24 h-24 rounded-full shadow-2xl transition-all duration-300 overflow-hidden border-4 ${
+        className={`relative w-24 h-28 rounded-full shadow-2xl transition-all duration-300 overflow-hidden border-4 flex items-center justify-center ${
           isOpen ? 'scale-110 border-blue-400' : 'border-blue-300 hover:scale-105'
         } ${
           alertLevel === 'critical'
@@ -128,7 +128,7 @@ export default function FloatingWorkerAgent() {
             : 'bg-gradient-to-br from-blue-500 to-blue-600'
         }`}
       >
-        <Worker3D isMonitoring={isMonitoring} alertLevel={alertLevel} />
+        <WorkerAvatar isMonitoring={isMonitoring} alertLevel={alertLevel} />
       </button>
 
       {/* Status Indicator Badge */}
