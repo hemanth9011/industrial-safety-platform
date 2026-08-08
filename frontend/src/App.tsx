@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useState, useEffect } from 'react'
 import Layout from './components/Layout'
 import Watermark from './components/Watermark'
+import FloatingRobotAgent from './components/FloatingRobotAgent'
 import AIChat from './components/AIChat'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
@@ -65,6 +66,7 @@ function App() {
   return (
     <Router>
       <Watermark text="ISIP" opacity={0.06} size="large" />
+      <FloatingRobotAgent />
       <Layout user={auth.user} onLogout={handleLogout}>
         <Routes>
           <Route path="/" element={<Dashboard />} />
